@@ -1,0 +1,66 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { setHistory, updateLastCandle, CandleData } from '@/lib/features/tradeSlice';
+
+export const useCoinbaseData = (symbol: string = 'BTC-USD') => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    // 1. fetch history data (REST API)
+    const fetchHistory = async () => {
+    const response = await fetch(`/api/klines?symbol=${symbol.toUpperCase()}`);
+
+      const data = await response.json();
+      console.log("data: ", data)
+      const formattedData: CandleData[] = data.map((d: any) => ({
+        time: d[0] / 1000,  // ms -> second
+        low: parseFloat(d[1]),
+        high: parseFloat(d[2]),
+        open: parseFloat(d[3]),
+        close: parseFloat(d[4]),
+      }))
+      .sort((a, b) => a.time - b.time); // Lightweight Charts needs ascending order
+      dispatch(setHistory(formattedData));
+    };
+
+    fetchHistory();
+
+    // 2. 建立 WebSocket 实时更新
+    const ws = new WebSocket('wss://ws-feed.exchange.coinbase.com');
+
+    ws.onopen = () => {
+    const subscribe = {
+      type: 'subscribe',
+      product_ids: ['BTC-USD'],
+      channels: ['ticker'] // 'ticker' gives us the latest price
+    };
+    ws.send(JSON.stringify(subscribe));
+  };
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      
+      // Coinbase 'ticker' channel provides the latest price
+      if (msg.type === 'ticker' && msg.price) {
+        const price = parseFloat(msg.price);
+        const time = Math.floor(new Date(msg.time).getTime() / 1000);
+        // Round to the start of the current minute for the candle timestamp
+        const candleTime = Math.floor(time / 60) * 60;
+
+        const newUpdate: CandleData = {
+          time: candleTime as any,
+          open: price, // The slice logic will handle if this should be the existing open
+          high: price,
+          low: price,
+          close: price,
+        };
+
+        dispatch(updateLastCandle(newUpdate));
+      }
+    };
+
+    return () => ws.close(); // 清理连接
+  }, [symbol, dispatch]);
+};
