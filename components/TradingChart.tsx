@@ -9,6 +9,9 @@ export const TradingChart = () => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+
+  // 用于标记历史数据是否已经初次加载到图表中
+  const isDataInitialized = useRef(false);
   
   // 从 Redux 获取数据
   const history = useSelector((state: RootState) => state.trade.history);
@@ -29,8 +32,6 @@ export const TradingChart = () => {
       width: chartContainerRef.current.clientWidth,
       height: 400,
     });
-
-    console.log("chart is: ",chart)
 
     // 2. 添加 K 线序列
     const candlestickSeries = chart.addSeries(CandlestickSeries, {
@@ -60,8 +61,19 @@ export const TradingChart = () => {
 
   // 4. 当 Redux 中的数据变化时，同步到图表
   useEffect(() => {
-    if (seriesRef.current && history.length > 0) {
+    if (!seriesRef.current || history.length === 0) return;
+
+    // 如果还没有加载过历史数据，使用 setData 全量渲染
+    if (!isDataInitialized.current && history.length > 1) {
       seriesRef.current.setData(history);
+      isDataInitialized.current = true;
+      // 自动缩放以展示所有 K 线
+      chartRef.current?.timeScale().fitContent();
+    } else {
+      // 如果已经初始化过了，使用 update 增量更新最后一条
+      const lastItem = history[history.length - 1];
+      // 使用浅拷贝 {...lastItem} 解决 Redux 冻结对象报错问题
+      seriesRef.current.update({ ...lastItem });
     }
   }, [history]);
 

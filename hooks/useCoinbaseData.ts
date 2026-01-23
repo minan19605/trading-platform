@@ -45,8 +45,12 @@ export const useCoinbaseData = (symbol: string = 'BTC-USD') => {
       // Coinbase 'ticker' channel provides the latest price
       if (msg.type === 'ticker' && msg.price) {
         const price = parseFloat(msg.price);
+
+        // 1. 将 Coinbase 的 ISO 时间转为 Unix 秒级时间戳
         const time = Math.floor(new Date(msg.time).getTime() / 1000);
+
         // Round to the start of the current minute for the candle timestamp
+        // 对齐到分钟起点 (例如 12:01:45 -> 12:01:00)
         const candleTime = Math.floor(time / 60) * 60;
 
         const newUpdate: CandleData = {
