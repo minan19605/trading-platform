@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     // Coinbase API: /products/{id}/candles
     // granularity: 60 = 1 minute, 300 = 5 minutes, etc.
     const res = await fetch(
-      `https://api.exchange.coinbase.com/products/${symbol}/candles?granularity=60`,
+      `https://api.exchange.coinbase.com/products/${symbol}/candles?granularity=86400`,
       { 
         headers: { 'User-Agent': 'NextJS-Demo-App' }, // Coinbase requires a User-Agent header
         next: { revalidate: 0 } 

@@ -10,11 +10,13 @@ export interface CandleData {
 }
 
 interface TradeState {
+  symbol: string;  // BTC-USD, ETH-USD
   currentPrice: number;
   history: CandleData[];
 }
 
 const initialState: TradeState = {
+  symbol: 'BTC-USD',  // default value
   currentPrice: 0,
   history: [],
 };
@@ -30,6 +32,11 @@ const tradeSlice = createSlice({
     // 更新历史 K 线数据
     setHistory: (state, action: PayloadAction<CandleData[]>) => {
       state.history = action.payload;
+    },
+
+    setSymbol: (state, action) => {
+      state.symbol = action.payload;
+      state.history = []; // 切换时清空旧数据，防止图表闪现旧走势
     },
 
     // 实时推入/更新最后一根 K 线
@@ -70,5 +77,5 @@ const tradeSlice = createSlice({
   },
 });
 
-export const { setPrice, setHistory, updateLastCandle } = tradeSlice.actions;
+export const { setPrice, setHistory, setSymbol, updateLastCandle } = tradeSlice.actions;
 export default tradeSlice.reducer;

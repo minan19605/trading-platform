@@ -15,6 +15,15 @@ export const TradingChart = () => {
   
   // 从 Redux 获取数据
   const history = useSelector((state: RootState) => state.trade.history);
+  const symbol = useSelector((state: RootState) => state.trade.symbol)
+
+  useEffect(() => {
+    isDataInitialized.current = false;
+    // 可选：在这里清空图表数据，防止旧币种残留在屏幕上
+    if (seriesRef.current) {
+      seriesRef.current.setData([]);
+    }
+  }, [symbol])
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
@@ -29,6 +38,7 @@ export const TradingChart = () => {
         vertLines: { color: '#111' },
         horzLines: { color: '#111' },
       },
+
       width: chartContainerRef.current.clientWidth,
       height: 400,
     });
@@ -67,8 +77,11 @@ export const TradingChart = () => {
     if (!isDataInitialized.current && history.length > 1) {
       seriesRef.current.setData(history);
       isDataInitialized.current = true;
+      // ✅ 强制滚动到最右侧（最新的数据点）
+      chartRef.current?.timeScale().scrollToRealTime();
       // 自动缩放以展示所有 K 线
-      chartRef.current?.timeScale().fitContent();
+      // chartRef.current?.timeScale().fitContent();
+      
     } else {
       // 如果已经初始化过了，使用 update 增量更新最后一条
       const lastItem = history[history.length - 1];

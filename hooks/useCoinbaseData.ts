@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setHistory, updateLastCandle, CandleData } from '@/lib/features/tradeSlice';
+import { RootState } from '@/lib/store';
 
-export const useCoinbaseData = (symbol: string = 'BTC-USD') => {
+export const useCoinbaseData = () => {
   const dispatch = useDispatch();
+  const symbol = useSelector((state: RootState) => state.trade.symbol);
 
   useEffect(() => {
     // 1. fetch history data (REST API)
@@ -13,9 +15,9 @@ export const useCoinbaseData = (symbol: string = 'BTC-USD') => {
     const response = await fetch(`/api/klines?symbol=${symbol.toUpperCase()}`);
 
       const data = await response.json();
-      console.log("data: ", data)
+      // console.log("data: ", data)
       const formattedData: CandleData[] = data.map((d: any) => ({
-        time: d[0] / 1000,  // ms -> second
+        time: d[0],
         low: parseFloat(d[1]),
         high: parseFloat(d[2]),
         open: parseFloat(d[3]),
@@ -33,7 +35,7 @@ export const useCoinbaseData = (symbol: string = 'BTC-USD') => {
     ws.onopen = () => {
     const subscribe = {
       type: 'subscribe',
-      product_ids: ['BTC-USD'],
+      product_ids:[symbol], //['BTC-USD'],
       channels: ['ticker'] // 'ticker' gives us the latest price
     };
     ws.send(JSON.stringify(subscribe));
@@ -41,13 +43,14 @@ export const useCoinbaseData = (symbol: string = 'BTC-USD') => {
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data);
+      // console.log('msg is: ', msg)
       
       // Coinbase 'ticker' channel provides the latest price
       if (msg.type === 'ticker' && msg.price) {
         const price = parseFloat(msg.price);
 
         // 1. 将 Coinbase 的 ISO 时间转为 Unix 秒级时间戳
-        const time = Math.floor(new Date(msg.time).getTime() / 1000);
+        const time = Math.floor(new Date(msg.time).getTime() /1000);
 
         // Round to the start of the current minute for the candle timestamp
         // 对齐到分钟起点 (例如 12:01:45 -> 12:01:00)
