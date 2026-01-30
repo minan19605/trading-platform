@@ -1,8 +1,6 @@
-Here is a professional and comprehensive **README.md** tailored for your project, reflecting the technical architecture and tools you've implemented.
 
----
 
-# 🪙 Crypto Real-Time Live Terminal
+# Crypto Real-Time Live Terminal
 
 A high-performance, real-time cryptocurrency charting terminal built with **Next.js**. This project features interactive candlestick charts, live data streaming via **WebSockets**, and robust state management using **Redux Toolkit**.
 
