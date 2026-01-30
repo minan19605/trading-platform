@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Time } from 'lightweight-charts'
 
 // 定义单根 K 线的数据结构 (OHLC)
 export interface CandleData {
-  time: number;
+  time: Time; //number;
   open: number;
   high: number;
   low: number;
