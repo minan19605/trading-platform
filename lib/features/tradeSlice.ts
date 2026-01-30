@@ -58,7 +58,7 @@ const tradeSlice = createSlice({
         lastCandle.close = incoming.close;
         lastCandle.high = Math.max(lastCandle.high, incoming.close);
         lastCandle.low = Math.min(lastCandle.low, incoming.close);
-      } else if (incoming.time > (lastCandle.time as number)) {
+      } else if (incoming.time as number > (lastCandle.time as number)) {
         // 2. 开启新 K 线 (进入了下一分钟)
         // 新 K 线的 open 应该是上一根的 close
         const newCandle: CandleData = {

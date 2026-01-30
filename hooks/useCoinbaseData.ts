@@ -4,10 +4,14 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setHistory, updateLastCandle, CandleData } from '@/lib/features/tradeSlice';
 import { RootState } from '@/lib/store';
+import { Time } from 'lightweight-charts'
 
 export const useCoinbaseData = () => {
   const dispatch = useDispatch();
   const symbol = useSelector((state: RootState) => state.trade.symbol);
+
+  // Typical format: [timestamp, open, high, low, close, volume, ...]
+  type RawKLineData = [number, number, number, number, number, number];
 
   useEffect(() => {
     // 1. fetch history data (REST API)
@@ -15,15 +19,16 @@ export const useCoinbaseData = () => {
     const response = await fetch(`/api/klines?symbol=${symbol.toUpperCase()}`);
 
       const data = await response.json();
-      // console.log("data: ", data)
-      const formattedData: CandleData[] = data.map((d: any) => ({
-        time: d[0],
-        low: parseFloat(d[1]),
-        high: parseFloat(d[2]),
-        open: parseFloat(d[3]),
-        close: parseFloat(d[4]),
+      console.log("data: ", data)
+      const formattedData: CandleData[] = data.map((d: RawKLineData) => ({
+        time: d[0] as Time,
+        low: (d[1]),
+        high: (d[2]),
+        open: (d[3]),
+        close: (d[4]),
       }))
-      .sort((a, b) => a.time - b.time); // Lightweight Charts needs ascending order
+      .sort((a:CandleData, b:CandleData) => (a.time as number) - (b.time as number)); // Lightweight Charts needs ascending order
+      
       dispatch(setHistory(formattedData));
     };
 
@@ -57,7 +62,7 @@ export const useCoinbaseData = () => {
         const candleTime = Math.floor(time / 60) * 60;
 
         const newUpdate: CandleData = {
-          time: candleTime as any,
+          time: candleTime as Time,
           open: price, // The slice logic will handle if this should be the existing open
           high: price,
           low: price,
