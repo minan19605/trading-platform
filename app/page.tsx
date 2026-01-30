@@ -30,8 +30,6 @@ export default function TradePage() {
               <option value="ETH-USD" className="bg-slate-900 text-base">ETH/USD Live Terminal</option>
               <option value="SOL-USD" className="bg-slate-900 text-base">SOL/USD Live Terminal</option>
             </select>
-            {/* 自定义一个小箭头图标，增强 UI 感知 */}
-            <span className="text-gray-500 text-sm">▼</span>
           </div>
         <div className="text-xl font-mono text-green-400">${currentPrice}</div>
       </div>
