@@ -19,7 +19,6 @@ export default function TradePage() {
   return (
     <main className="min-h-screen bg-black text-white p-8">
       <div className="flex justify-between items-center mb-6">
-        {/* <h1 className="text-2xl font-bold">BTC/USD Live Terminal</h1> */}
         <div className="flex items-center gap-2 mb-4">
             <select
               value={currentSymbol}
